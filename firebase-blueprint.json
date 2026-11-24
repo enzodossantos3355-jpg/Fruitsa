@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "UserStudioProfile": {
+      "title": "UserStudioProfile",
+      "description": "Private authenticated studio profile and onboarding state isolated per Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 254,
+          "description": "Verified account email address."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Creator display name."
+        },
+        "studioName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "description": "Official name of the user's audiovisual studio."
+        },
+        "studioBio": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 400,
+          "description": "Optional brief editorial description of the studio."
+        },
+        "photoURL": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500,
+          "description": "Optional HTTPS URL for profile picture."
+        },
+        "avatarTone": {
+          "type": "string",
+          "enum": ["blue", "sky", "slate", "emerald", "amber"],
+          "description": "Monogram fallback color token when no profile image is provided."
+        },
+        "onboardingCompleted": {
+          "type": "boolean",
+          "description": "Whether initial studio setup has been completed."
+        },
+        "onboardingSkippedOptionals": {
+          "type": "boolean",
+          "description": "Whether optional fields were skipped during onboarding."
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["google", "password"],
+          "description": "Primary authentication provider used to create the account."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of studio profile creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of most recent profile update."
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "displayName",
+        "studioName",
+        "studioBio",
+        "photoURL",
+        "avatarTone",
+        "onboardingCompleted",
+        "onboardingSkippedOptionals",
+        "provider",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StudioActivity": {
+      "title": "StudioActivity",
+      "description": "Immutable activity audit record scoped strictly to a user studio.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["studio_created", "profile_updated", "account_verified"],
+          "description": "Type of studio milestone."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Short human-readable event title."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 240,
+          "description": "Optional event summary."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the activity."
+        }
+      },
+      "required": ["uid", "type", "title", "description", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserStudioProfile"
+      },
+      "description": "Stores the authenticated creator's private studio profile and onboarding completion state."
+    },
+    "/users/{userId}/activities/{activityId}": {
+      "schema": {
+        "$ref": "#/entities/StudioActivity"
+      },
+      "description": "Stores real, immutable studio setup and account activity events owned by the user."
+    }
+  }
+}

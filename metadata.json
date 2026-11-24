@@ -1,0 +1,6 @@
+{
+  "name": "FruitStudio",
+  "description": "Plataforma profissional para criação, organização e gerenciamento de novelas e vídeos curtos com personagens de frutas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

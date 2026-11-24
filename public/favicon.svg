@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#172033"/>
+  <!-- Cinema viewfinder frame corners -->
+  <path d="M14 23V16C14 14.8954 14.8954 14 16 14H23" stroke="#E2E8F0" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M50 23V16C50 14.8954 49.1046 14 48 14H41" stroke="#E2E8F0" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M14 41V48C14 49.1046 14.8954 50 16 50H23" stroke="#E2E8F0" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M50 41V48C50 49.1046 49.1046 50 48 50H41" stroke="#E2E8F0" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Geometric fruit silhouette merged with cinema play/aperture core -->
+  <path d="M32 23C25.9249 23 21 27.9249 21 34C21 40.0751 25.9249 45 32 45C38.0751 45 43 40.0751 43 34C43 27.9249 38.0751 23 32 23Z" fill="#2563EB"/>
+  <!-- Subtle organic citrus leaf / stem -->
+  <path d="M32 21.5C32 18.2 34.6 15.6 38.5 15.5C38.4 19.2 35.8 21.5 32 21.5Z" fill="#0EA5E9"/>
+  <!-- Precision cinema play aperture inside -->
+  <path d="M29.5 29.5L36.8 34L29.5 38.5V29.5Z" fill="#FFFFFF"/>
+</svg>

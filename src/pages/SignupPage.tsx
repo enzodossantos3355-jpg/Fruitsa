@@ -1,0 +1,257 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { AuthShell } from '../components/AuthShell';
+import { useAuth } from '../contexts/AuthContext';
+import { getFirebaseErrorMessage } from '../lib/firebaseErrors';
+
+export const SignupPage: React.FC = () => {
+  const { signUpWithEmail, signInWithGoogle, isConfigured } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+
+    if (!isConfigured) {
+      setError('Configure o projeto Firebase em src/lib/firebase.ts antes de criar uma conta.');
+      return;
+    }
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (trimmedName.length < 2) {
+      setError('Informe seu nome completo ou nome de exibição (mínimo de 2 caracteres).');
+      return;
+    }
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError('Informe um endereço de e-mail válido.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('A confirmação de senha não corresponde à senha informada.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await signUpWithEmail(trimmedName, trimmedEmail, password);
+    } catch (err) {
+      setError(getFirebaseErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setError(null);
+    if (!isConfigured) {
+      setError('Configure o projeto Firebase em src/lib/firebase.ts antes de continuar com o Google.');
+      return;
+    }
+    setGoogleSubmitting(true);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      setError(getFirebaseErrorMessage(err));
+    } finally {
+      setGoogleSubmitting(false);
+    }
+  };
+
+  const busy = submitting || googleSubmitting;
+
+  return (
+    <AuthShell
+      title="Criar conta no FruitStudio"
+      subtitle="Configure sua conta para acessar a fundação do estúdio."
+    >
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 p-3.5 rounded-lg bg-[#F43F5E]/8 border border-[#F43F5E]/25 text-xs text-[#172033] flex items-start gap-2.5 leading-relaxed"
+        >
+          <AlertCircle className="w-4 h-4 text-[#F43F5E] shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={handleGoogleSignup}
+        disabled={busy || !isConfigured}
+        className="w-full min-h-[44px] inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-sm font-medium text-[#172033] bg-white hover:bg-[#F5F7FA] border border-[#E2E8F0] rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+      >
+        {googleSubmitting ? (
+          <Loader2 className="w-4 h-4 animate-spin text-[#2563EB]" />
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="#4285F4"
+              d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+            />
+          </svg>
+        )}
+        <span>{googleSubmitting ? 'Conectando com o Google...' : 'Cadastrar com Google'}</span>
+      </button>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-[#E2E8F0]" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-white px-3 text-[#64748B]">ou cadastre-se com e-mail</span>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <div>
+          <label htmlFor="signup-name" className="block text-sm font-medium text-[#172033] mb-1.5">
+            Nome
+          </label>
+          <input
+            id="signup-name"
+            type="text"
+            autoComplete="name"
+            required
+            maxLength={80}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Como você gostaria de ser chamado"
+            disabled={busy}
+            className="w-full min-h-[44px] px-3.5 py-2.5 text-sm text-[#172033] bg-white border border-[#E2E8F0] rounded-lg placeholder:text-[#64748B]/70 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 focus:outline-none transition-colors"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="signup-email" className="block text-sm font-medium text-[#172033] mb-1.5">
+            E-mail
+          </label>
+          <input
+            id="signup-email"
+            type="email"
+            autoComplete="email"
+            required
+            maxLength={254}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="nome@exemplo.com"
+            disabled={busy}
+            className="w-full min-h-[44px] px-3.5 py-2.5 text-sm text-[#172033] bg-white border border-[#E2E8F0] rounded-lg placeholder:text-[#64748B]/70 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 focus:outline-none transition-colors"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="signup-password"
+            className="block text-sm font-medium text-[#172033] mb-1.5"
+          >
+            Senha
+          </label>
+          <div className="relative">
+            <input
+              id="signup-password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mínimo de 6 caracteres"
+              disabled={busy}
+              className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 text-sm text-[#172033] bg-white border border-[#E2E8F0] rounded-lg placeholder:text-[#64748B]/70 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 focus:outline-none transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md text-[#64748B] hover:text-[#172033] hover:bg-[#F5F7FA] transition-colors cursor-pointer"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="signup-confirm"
+            className="block text-sm font-medium text-[#172033] mb-1.5"
+          >
+            Confirmar senha
+          </label>
+          <div className="relative">
+            <input
+              id="signup-confirm"
+              type={showConfirm ? 'text' : 'password'}
+              autoComplete="new-password"
+              required
+              minLength={6}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Repita sua senha"
+              disabled={busy}
+              className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 text-sm text-[#172033] bg-white border border-[#E2E8F0] rounded-lg placeholder:text-[#64748B]/70 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 focus:outline-none transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((prev) => !prev)}
+              aria-label={showConfirm ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md text-[#64748B] hover:text-[#172033] hover:bg-[#F5F7FA] transition-colors cursor-pointer"
+            >
+              {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-xs text-[#64748B] leading-relaxed">
+          Após o cadastro com e-mail, enviaremos um link de verificação para confirmar sua conta
+          antes de liberar o acesso ao estúdio.
+        </p>
+
+        <button
+          type="submit"
+          disabled={busy || !isConfigured}
+          className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+          <span>{submitting ? 'Criando conta...' : 'Criar conta'}</span>
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-[#64748B]">
+        Já possui uma conta?{' '}
+        <Link
+          to="/entrar"
+          className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+        >
+          Entrar
+        </Link>
+      </p>
+    </AuthShell>
+  );
+};
